@@ -1,6 +1,5 @@
 package org.goldenpass.androiduseh
 
-import android.content.res.Resources
 import android.graphics.Bitmap
 import android.util.Log
 import com.aallam.openai.api.chat.ChatMessage as OpenAIChatMessage
@@ -31,9 +30,8 @@ class HoloAgent(apiKey: String, private val modelName: String = "holo3-1-35b-a3b
     private val openai = OpenAI(config)
 
     override suspend fun getNextAction(history: List<ChatMessage>, screenshot: Bitmap, uiTree: String): String? = withContext(Dispatchers.IO) {
-        val displayMetrics = Resources.getSystem().displayMetrics
-        val screenWidth = displayMetrics.widthPixels
-        val screenHeight = displayMetrics.heightPixels
+        val screenWidth = screenshot.width
+        val screenHeight = screenshot.height
 
         val normalizedUiTree = normalizeUiTree(uiTree, screenWidth, screenHeight)
 
