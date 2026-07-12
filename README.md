@@ -9,6 +9,11 @@ HoloMobile (formerly AndroidUseH) is a MobileUse agent and an intelligent Androi
 - **Vision-Augmented**: Combines UI tree data with screen captures for robust understanding of the application state.
 - **Holo AI Integration**: Built to work with `hcompany.ai` models for high-performance mobile agent capabilities.
 
+## Demo
+
+1. **Create a Contact**: Observe the agent navigating to the Contacts app to add a new entry.
+2. **Create a Calendar Event**: Watch the agent schedule a new event in the Calendar app.
+
 ## Getting Started
 
 ### Prerequisites
