@@ -54,7 +54,8 @@ class HoloAgent(apiKey: String, private val modelName: String = "holo3-1-35b-a3b
             - The UI Tree contains clickable elements and their normalized center coordinates. Use this to help locate precise targets.
             
             REQUIRED RESPONSE FORMAT (JSON ONLY):
-            You must respond with a SINGLE JSON object in one of these formats:
+            You must respond with a SINGLE JSON object in one of these formats.
+            COORDINATES MUST BE NUMBERS, NOT STRINGS.
             
             1. CLICK ACTION:
             {
@@ -101,6 +102,7 @@ class HoloAgent(apiKey: String, private val modelName: String = "holo3-1-35b-a3b
             
             IMPORTANT RULES:
             - Respond ONLY with the JSON object. No other text.
+            - Keep the "thought" field brief and concise (max 2 sentences).
             - Be precise with coordinates.
             - If the task is finished, return the "done" action.
         """.trimIndent()
@@ -135,7 +137,7 @@ class HoloAgent(apiKey: String, private val modelName: String = "holo3-1-35b-a3b
                         }
                     }
                 }
-                maxTokens = 2048
+                maxTokens = 8192
             }
             val completion = openai.chatCompletion(chatCompletionRequest)
             val rawResult = completion.choices.firstOrNull()?.message?.content?.trim()
@@ -180,7 +182,7 @@ class HoloAgent(apiKey: String, private val modelName: String = "holo3-1-35b-a3b
                     }
                 }
             }
-            return normalizedArray.toString(2)
+            return normalizedArray.toString()
         } catch (e: Exception) {
             Log.e("HoloAgent", "Error normalizing UI tree", e)
             return uiTree
@@ -228,8 +230,8 @@ class HoloAgent(apiKey: String, private val modelName: String = "holo3-1-35b-a3b
             }
             return json.toString()
         } catch (e: Exception) {
-            Log.e("HoloAgent", "Error denormalizing response", e)
-            return rawResponse
+            Log.e("HoloAgent", "Error denormalizing response: ${e.message}", e)
+            return null
         }
     }
 }

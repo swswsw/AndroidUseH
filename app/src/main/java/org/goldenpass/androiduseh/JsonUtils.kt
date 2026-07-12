@@ -44,8 +44,55 @@ object JsonUtils {
         
         // If we reach here, we didn't find a matching closing brace.
         // It's likely the response was truncated.
-        // We return the substring from the first brace to the end to let the JSON parser
-        // handle it (and likely throw a specific JSONException).
-        return text.substring(firstBrace)
+        // We attempt to "fix" the truncated JSON by closing strings and braces.
+        var fixedJson = text.substring(firstBrace).trim()
+        
+        // Handle trailing backslash escape
+        var lastEscape = false
+        var lastInString = false
+        for (c in fixedJson) {
+            if (lastEscape) { lastEscape = false; continue }
+            if (c == '\\') { lastEscape = true; continue }
+            if (c == '"') { lastInString = !lastInString; continue }
+        }
+        
+        if (lastEscape) {
+            fixedJson = fixedJson.substring(0, fixedJson.length - 1).trim()
+        }
+        
+        if (lastInString) {
+            fixedJson = fixedJson.trimEnd() + "\""
+        }
+        
+        // Remove trailing colon or comma which often appears before a truncated block
+        while (fixedJson.endsWith(",") || fixedJson.endsWith(":") || fixedJson.endsWith("{") || fixedJson.endsWith("[")) {
+            fixedJson = fixedJson.substring(0, fixedJson.length - 1).trim()
+        }
+        
+        // Final pass to ensure all strings are closed and braces are balanced
+        // This is a simple but effective way to handle most truncation issues.
+        var result = ""
+        var currentInString = false
+        var currentEscape = false
+        for (c in fixedJson) {
+            if (currentEscape) { result += c; currentEscape = false; continue }
+            if (c == '\\') { result += c; currentEscape = true; continue }
+            if (c == '"') { currentInString = !currentInString; result += c; continue }
+            if (currentInString && c == '\n') { result += " "; continue } // Replace newline in string
+            result += c
+        }
+        if (currentInString) result += "\""
+        
+        var finalBraceCount = 0
+        for (c in result) {
+            if (c == '{') finalBraceCount++
+            else if (c == '}') finalBraceCount--
+        }
+        while (finalBraceCount > 0) {
+            result += "}"
+            finalBraceCount--
+        }
+        
+        return result
     }
 }

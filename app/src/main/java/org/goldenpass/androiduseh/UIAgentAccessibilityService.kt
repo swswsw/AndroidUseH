@@ -74,7 +74,7 @@ class UIAgentAccessibilityService : AccessibilityService(), LifecycleOwner, View
     private var overlayComposeView: ComposeView? = null
     private var currentModelName by mutableStateOf("holo3-1-35b-a3b")
     private var conversationHistory = mutableStateListOf<ChatMessage>()
-    private var isChatVisible by mutableStateOf(false)
+    private var isChatVisible by mutableStateOf(true)
     private var statusText by mutableStateOf("Ready")
     private var currentStepCount by mutableStateOf(0)
 
@@ -469,6 +469,7 @@ class UIAgentAccessibilityService : AccessibilityService(), LifecycleOwner, View
         }
 
         windowManager.addView(overlayComposeView, params)
+        updateWindowFlags()
     }
 
     @Composable
