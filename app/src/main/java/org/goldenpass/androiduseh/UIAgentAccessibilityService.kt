@@ -206,11 +206,8 @@ class UIAgentAccessibilityService : AccessibilityService(), LifecycleOwner, View
     }
 
     private suspend fun handleAgentAction(jsonResponse: String) {
+        val jsonStr = JsonUtils.extractJson(jsonResponse) ?: return
         try {
-            val jsonStr = if (jsonResponse.contains("{")) {
-                jsonResponse.substring(jsonResponse.indexOf("{"), jsonResponse.lastIndexOf("}") + 1)
-            } else jsonResponse
-
             val json = JSONObject(jsonStr)
             val action = json.optString("action")
             val thought = json.optString("thought", "No reasoning provided")

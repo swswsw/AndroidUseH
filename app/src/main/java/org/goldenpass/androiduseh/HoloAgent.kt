@@ -137,6 +137,7 @@ class HoloAgent(apiKey: String, private val modelName: String = "holo3-1-35b-a3b
                         }
                     }
                 }
+                maxTokens = 2048
             }
             val completion = openai.chatCompletion(chatCompletionRequest)
             val rawResult = completion.choices.firstOrNull()?.message?.content?.trim()
@@ -188,19 +189,26 @@ class HoloAgent(apiKey: String, private val modelName: String = "holo3-1-35b-a3b
         }
     }
 
+    private fun parseCoordinate(json: JSONObject, key: String): Double {
+        val value = json.opt(key) ?: return -1.0
+        if (value is Number) return value.toDouble()
+        if (value is String) {
+            // Handle strings like "483" or "483," or " 483 "
+            return value.trim().removeSuffix(",").toDoubleOrNull() ?: -1.0
+        }
+        return -1.0
+    }
+
     private fun denormalizeResponse(rawResponse: String?, screenWidth: Int, screenHeight: Int): String? {
         if (rawResponse == null) return null
+        val jsonStr = JsonUtils.extractJson(rawResponse) ?: return null
         try {
-            val jsonStr = if (rawResponse.contains("{")) {
-                rawResponse.substring(rawResponse.indexOf("{"), rawResponse.lastIndexOf("}") + 1)
-            } else rawResponse
-
             val json = JSONObject(jsonStr)
             val action = json.optString("action")
             
             if (action == "click") {
-                val nx = json.optDouble("x", -1.0)
-                val ny = json.optDouble("y", -1.0)
+                val nx = parseCoordinate(json, "x")
+                val ny = parseCoordinate(json, "y")
                 if (nx >= 0 && ny >= 0) {
                     val x = (nx / 1000.0 * screenWidth).toInt()
                     val y = (ny / 1000.0 * screenHeight).toInt()
@@ -208,10 +216,10 @@ class HoloAgent(apiKey: String, private val modelName: String = "holo3-1-35b-a3b
                     json.put("y", y)
                 }
             } else if (action == "swipe") {
-                val nsx = json.optDouble("startX", -1.0)
-                val nsy = json.optDouble("startY", -1.0)
-                val nex = json.optDouble("endX", -1.0)
-                val ney = json.optDouble("endY", -1.0)
+                val nsx = parseCoordinate(json, "startX")
+                val nsy = parseCoordinate(json, "startY")
+                val nex = parseCoordinate(json, "endX")
+                val ney = parseCoordinate(json, "endY")
                 
                 if (nsx >= 0 && nsy >= 0 && nex >= 0 && ney >= 0) {
                     json.put("startX", (nsx / 1000.0 * screenWidth).toInt())
