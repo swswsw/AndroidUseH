@@ -1,6 +1,6 @@
-# AndroidUseH
+# HoloMobile
 
-AndroidUseH is an intelligent Android UI Automation Agent powered by the Holo AI API. It enables autonomous interaction with Android applications by analyzing screen content and UI structure to perform tasks as specified by the user.
+HoloMobile (formerly AndroidUseH) is a MobileUse agent and an intelligent Android UI Automation Agent powered by the Holo AI API. It enables autonomous interaction with Android applications by analyzing screen content and UI structure to perform tasks as specified by the user.
 
 ## Features
 
@@ -27,7 +27,7 @@ AndroidUseH is an intelligent Android UI Automation Agent powered by the Holo AI
 1. **API Key**: Launch the app and enter your Holo API key in the setup screen.
 2. **Accessibility Service**: 
    - Tap "Open Accessibility Settings" in the app.
-   - Find and enable "AndroidUseH Assistant".
+   - Find and enable "HoloMobile Assistant".
    - Grant the necessary permissions (this is required for the agent to see the screen and perform actions).
 
 ## How it Works
