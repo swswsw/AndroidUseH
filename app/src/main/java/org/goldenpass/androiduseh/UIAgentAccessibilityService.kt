@@ -172,14 +172,8 @@ class UIAgentAccessibilityService : AccessibilityService(), LifecycleOwner, View
 
         updateOverlay(status = "Capturing screen...", step = currentStepCountInt)
         
-        val windows = windows
-        val targetWindow = windows.find { 
-            it.type == AccessibilityWindowInfo.TYPE_APPLICATION && it.isActive 
-        } ?: windows.find { it.type == AccessibilityWindowInfo.TYPE_APPLICATION }
-        
-        val targetWindowId = targetWindow?.id ?: -1
-        
-        captureScreenshot(mainExecutor, targetWindowId) { bitmap ->
+        // Always capture full screen to match screen-absolute accessibility coordinates
+        captureScreenshot(mainExecutor, -1) { bitmap ->
             if (bitmap == null) {
                 stopWithNotification("Failed to capture screenshot")
                 return@captureScreenshot
@@ -677,18 +671,29 @@ class UIAgentAccessibilityService : AccessibilityService(), LifecycleOwner, View
     }
 
     fun getClickableElementsJson(): String {
-        val windows = windows
-        val targetWindow = windows.find { 
-            it.type == AccessibilityWindowInfo.TYPE_APPLICATION && it.isActive 
-        } ?: windows.find { it.type == AccessibilityWindowInfo.TYPE_APPLICATION }
-        
-        val rootNode = targetWindow?.root ?: rootInActiveWindow ?: return "[]"
-
-        if (rootNode.packageName == packageName) {
-            return "[]"
-        }
         val clickableItems = JSONArray()
-        traverseAndCollectClickable(rootNode, clickableItems)
+        val windows = windows
+        
+        // Sort windows by layer to handle overlapping windows correctly (highest layer last)
+        val sortedWindows = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            windows.sortedBy { it.layer }
+        } else {
+            windows
+        }
+
+        for (window in sortedWindows) {
+            val rootNode = window.root ?: continue
+            
+            // Skip our own overlay to prevent the agent from trying to click its own UI
+            if (rootNode.packageName == packageName) {
+                rootNode.recycle()
+                continue
+            }
+
+            traverseAndCollectClickable(rootNode, clickableItems)
+            rootNode.recycle()
+        }
+
         return clickableItems.toString()
     }
 
