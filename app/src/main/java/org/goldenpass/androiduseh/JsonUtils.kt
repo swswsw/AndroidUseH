@@ -9,15 +9,23 @@ object JsonUtils {
     fun extractJson(text: String?): String? {
         if (text == null) return null
         
-        val firstBrace = text.indexOf('{')
-        if (firstBrace == -1) return text
+        var processedText = text
+        // Fix common LLM error: "x":": 100 or "x": : 100
+        // This specifically looks for a colon, followed by an optional quote and another colon before a number
+        processedText = processedText.replace(Regex(""":\s*"?\s*:\s*(-?\d+\.?\d*)"""), ": $1")
+        
+        // Fix trailing commas in objects or arrays
+        processedText = processedText.replace(Regex(""",\s*([]}])"""), "$1")
+        
+        val firstBrace = processedText.indexOf('{')
+        if (firstBrace == -1) return processedText
         
         var braceCount = 0
         var inString = false
         var escape = false
         
-        for (i in firstBrace until text.length) {
-            val c = text[i]
+        for (i in firstBrace until processedText.length) {
+            val c = processedText[i]
             if (escape) {
                 escape = false
                 continue
@@ -36,7 +44,7 @@ object JsonUtils {
                 } else if (c == '}') {
                     braceCount--
                     if (braceCount == 0) {
-                        return text.substring(firstBrace, i + 1)
+                        return processedText.substring(firstBrace, i + 1)
                     }
                 }
             }
@@ -44,8 +52,7 @@ object JsonUtils {
         
         // If we reach here, we didn't find a matching closing brace.
         // It's likely the response was truncated.
-        // We attempt to "fix" the truncated JSON by closing strings and braces.
-        var fixedJson = text.substring(firstBrace).trim()
+        var fixedJson = processedText.substring(firstBrace).trim()
         
         // Handle trailing backslash escape
         var lastEscape = false
@@ -78,7 +85,7 @@ object JsonUtils {
             if (currentEscape) { result += c; currentEscape = false; continue }
             if (c == '\\') { result += c; currentEscape = true; continue }
             if (c == '"') { currentInString = !currentInString; result += c; continue }
-            if (currentInString && c == '\n') { result += " "; continue } // Replace newline in string
+            if ((currentInString) && (c == '\n')) { result += " "; continue } // Replace newline in string
             result += c
         }
         if (currentInString) result += "\""

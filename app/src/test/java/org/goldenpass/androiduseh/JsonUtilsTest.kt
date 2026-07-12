@@ -58,4 +58,21 @@ class JsonUtilsTest {
         val result = JsonUtils.extractJson(input)
         assertEquals(expected, result)
     }
+
+    @Test
+    fun testExtractJson_MalformedLLM() {
+        val input = """
+            {
+                "thought": "Testing malformed JSON",
+                "action": "click",
+                "x":": 100,
+                "y": 780
+            }
+        """.trimIndent()
+        
+        // We expect it to be fixed to valid JSON
+        val result = JsonUtils.extractJson(input)
+        // It should at least be parseable by JSONObject
+        org.json.JSONObject(result!!)
+    }
 }
