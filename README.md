@@ -47,6 +47,10 @@ AndroidUseH is an intelligent Android UI Automation Agent powered by the Holo AI
     - `BitmapUtils.kt`: Image processing utilities.
     - `SecurityManager.kt`: Secure storage for API keys.
 
+## Credits
+
+This project uses [AndroidUse](https://github.com/swswsw/AndroidUse) as an example and reference.
+
 ## License
 
 [Add License Information Here]
