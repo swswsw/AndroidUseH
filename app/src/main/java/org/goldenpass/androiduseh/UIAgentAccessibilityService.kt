@@ -144,6 +144,8 @@ class UIAgentAccessibilityService : AccessibilityService(), LifecycleOwner, View
             initializeAgent()
             if (agent == null) return
         }
+
+        hideChatOverlay()
         
         isProcessing = true
         currentStepCountInt = 0
@@ -244,6 +246,7 @@ class UIAgentAccessibilityService : AccessibilityService(), LifecycleOwner, View
                 "type" -> {
                     val text = json.getString("text")
                     updateOverlay("Typing: $text", currentStepCountInt)
+                    hideChatOverlay()
                     delay(800)
                     typeText(text)
                     delay(2000)
@@ -320,7 +323,30 @@ class UIAgentAccessibilityService : AccessibilityService(), LifecycleOwner, View
     }
 
     private fun typeText(text: String) {
+        // Try to find the focused node in application windows first to avoid typing in our own overlay
+        val windows = windows
+        for (window in windows) {
+            if (window.type == AccessibilityWindowInfo.TYPE_APPLICATION) {
+                val root = window.root ?: continue
+                val focusedNode = findFocusedNode(root)
+                if (focusedNode != null) {
+                    val arguments = Bundle()
+                    arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text)
+                    focusedNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments)
+                    focusedNode.recycle()
+                    root.recycle()
+                    return
+                }
+                root.recycle()
+            }
+        }
+
+        // Fallback to rootInActiveWindow if no specific application window focused node found
         val rootNode = rootInActiveWindow ?: return
+        if (rootNode.packageName == packageName) {
+            rootNode.recycle()
+            return
+        }
         val focusedNode = findFocusedNode(rootNode)
         if (focusedNode != null) {
             val arguments = Bundle()
@@ -328,6 +354,7 @@ class UIAgentAccessibilityService : AccessibilityService(), LifecycleOwner, View
             focusedNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments)
             focusedNode.recycle()
         }
+        rootNode.recycle()
     }
 
     private fun findFocusedNode(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
@@ -598,6 +625,11 @@ class UIAgentAccessibilityService : AccessibilityService(), LifecycleOwner, View
             } catch (e: Exception) {}
             overlayComposeView = null
         }
+    }
+
+    private fun hideChatOverlay() {
+        isChatVisible = false
+        updateWindowFlags()
     }
 
     private fun toggleChat() {
