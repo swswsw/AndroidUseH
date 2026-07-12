@@ -263,6 +263,18 @@ class UIAgentAccessibilityService : AccessibilityService(), LifecycleOwner, View
                     delay(2000)
                     processNextStep()
                 }
+                "home" -> {
+                    updateOverlay("Going Home", currentStepCountInt)
+                    performGlobalAction(GLOBAL_ACTION_HOME)
+                    delay(2000)
+                    processNextStep()
+                }
+                "back" -> {
+                    updateOverlay("Going Back", currentStepCountInt)
+                    performGlobalAction(GLOBAL_ACTION_BACK)
+                    delay(2000)
+                    processNextStep()
+                }
                 "done" -> {
                     stopWithNotification("Task Completed Successfully!")
                 }

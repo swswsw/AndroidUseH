@@ -82,8 +82,20 @@ class HoloAgent(apiKey: String, private val modelName: String = "holo3-1-35b-a3b
               "endX": 500,
               "endY": 200
             }
+
+            4. HOME ACTION (Go to the home screen):
+            {
+              "thought": "Going home to find the app.",
+              "action": "home"
+            }
+
+            5. BACK ACTION (Go back):
+            {
+              "thought": "Going back.",
+              "action": "back"
+            }
             
-            4. DONE:
+            6. DONE:
             {
               "thought": "Task is complete.",
               "action": "done"
