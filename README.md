@@ -1,4 +1,4 @@
-# HoloMobile
+# HoloMobile - Mobile-Use Agent
 
 HoloMobile (formerly AndroidUseH) is a MobileUse agent and an intelligent Android UI Automation Agent powered by the Holo AI API. It enables autonomous interaction with Android applications by analyzing screen content and UI structure to perform tasks as specified by the user.
 
